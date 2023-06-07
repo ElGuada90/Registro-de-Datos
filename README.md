@@ -1,34 +1,17 @@
-# Registro-de-Datos
-Registro de Datos
+import datetime
+import mysql.connector
 from tkinter import messagebox
 import customtkinter
 from PIL import Image
+import openpyxl
 
-
-'''class EntryFrame(customtkinter.CTkFrame):
-    def __init__(self, master):
-        super().__init__(master)
-        self.grid_columnconfigure((0,1,), weight=1)
-        
-          
-        self.title = customtkinter.CTkLabel(self, text='LOGIN',fg_color=('light gray',"gray30"), text_color='gray', corner_radius=6,
-                                            font=customtkinter.CTkFont(size=18, weight="bold"))
-        self.title.grid(row=0, column=0, padx=10, pady=(10, 0), columnspan=2, sticky="ew")
-        self.entry_usuario = customtkinter.CTkEntry(self, placeholder_text="NOMBRE DE USUARIO", width=50, height=50)
-        self.entry_usuario.grid(row=1, column=0, padx=20, pady= 20, columnspan=2, sticky='nsew')
-        self.entry_contraseña = customtkinter.CTkEntry(self, placeholder_text="COTRASEÑA", show='*', width=50, height= 50)
-        self.entry_contraseña.grid(row=2, column=0, padx=20, pady= 20, columnspan=2, sticky='nsew')'''
-
-'''class App(customtkinter.CTk):
-    def __init__(self):
-        super().__init__()'''
-        
-logo = customtkinter.CTkImage(dark_image=Image.open('C:\\Users\\jguadamuz\\Videos\\imagen.PNG'), size =(280, 100)) 
+      
+#logo = customtkinter.CTkImage(dark_image=Image.open('C:\\Users\\jguadamuz'), size =(280, 100)) 
  
 ventana_login=customtkinter.CTk()        
 ventana_login.title('My App')
-ventana_login.geometry('520x500+525+100')
-ventana_login.grid_columnconfigure((0,1,), weight=1)
+ventana_login.geometry('520x480+525+100')
+ventana_login.grid_columnconfigure((0,1), weight=1)
         
 frame = customtkinter.CTkFrame(ventana_login)
 frame.grid(row=1, column=0, padx=20, pady= 20, columnspan=2, sticky='nsew')
@@ -44,19 +27,40 @@ entry_contraseña.grid(row=2, column=0, padx=20, pady= 20, columnspan=2, sticky=
     
 def button_callback():
         ventana_login.destroy()        
-button1 = customtkinter.CTkButton(ventana_login, text="", bg_color='white', fg_color='white', width=50, height=50, image=logo, command=button_callback)
+button1 = customtkinter.CTkButton(ventana_login, text="GRUPO TOVA", 
+                                  text_color='Blue',
+                                  font=customtkinter.CTkFont(size=35, weight="bold"),
+                                  bg_color='white', 
+                                  fg_color='white', 
+                                  width=50, height=50, 
+                                  command=button_callback)
 button1.grid(row=0, column=0, padx=20, pady=20, columnspan=2, sticky='ew')
      
  
 def inicio_sesion():
       
-    usuario = entry_usuario.get()
-    contraseña = entry_contraseña.get()
+    Usuario = entry_usuario.get()
+    Contraseña = entry_contraseña.get()
 
-    # Verificar nombre de usuario y contraseña
-    if  usuario == "admin" and contraseña == "admin123":
-        messagebox.showinfo("Inicio de sesión", "Inicio de sesión exitoso")
-        
+  # Conexión a la base de datos
+    conexion = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="JGmay12345_.#",
+        database="Despachos"
+    )
+    cursor = conexion.cursor()
+
+    # Consulta para verificar el usuario y contraseña
+    consulta = "SELECT * FROM usuarios WHERE Usuario = %s AND Contraseña = %s"
+    valores = (Usuario, Contraseña)
+    cursor.execute(consulta, valores)
+    resultado = cursor.fetchone()
+ 
+
+    # Verificar si el usuario y contraseña son válidos
+    if resultado:
+        messagebox.showinfo("Acceso correcto", "Bienvenido al sistema.")
         entry_usuario.delete(0, customtkinter.END)
         entry_contraseña.delete(0, customtkinter.END)
         # Cerrar la ventana de inicio de sesión y mostrar la ventana principal      
@@ -67,17 +71,82 @@ def inicio_sesion():
         ventana_principal.grid_columnconfigure(0, weight=1)
         ventana_principal.grid_rowconfigure(0, weight=1)
         
-   
+        
         def imprimir_datos(event):
+            global ID
+            fecha = datetime.datetime.now()
+            usuario = Usuario
+            conductor = entry_IDConductor.get()
+            camion = entry_Placa.get()
+            base = entry_Base.get()
+            puerta=entry_Ubicacion.get()
+            transportista=entry_Transporte.get()
+            lpn = entry_Registro.get()
+            hora_inicio = datetime.datetime.now().strftime("%H:%M:%S")
+            hora_cierre = datetime.datetime.now().strftime("%H:%M:%S")
             
-            datos = entry_Registro.get()  # Obtener el código escaneado en el CTkEntry
+             # Conexión a la base de datos
+            conexion = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="JGmay12345_.#",
+            database="Despachos"
+            )
+            cursor = conexion.cursor()
+
+            # Consulta para verificar el usuario y contraseña
+            consulta = "INSERT INTO productividad (fecha, usuario, Base, TInicio) VALUES (%s, %s, %s, %s)"
+            valores = (fecha, Usuario, base, hora_inicio)
+            cursor.execute(consulta, valores)
+            conexion.commit()
+            ID=cursor.lastrowid
+            
+            datos = f'Fecha: {fecha.strftime("%Y-%m-%d %H:%M:%S")}\'Usuario: {usuario}\'Conductor: {conductor}\Camión: {camion}\Base: {base}\Puerta: {puerta}\Transportista: {transportista}\LPN: {lpn}\n'
             textbox_datos.insert(customtkinter.END + "-1c", datos + " ")  # Agregar el código al CTkTextbox
-            entry_Registro.delete(0, customtkinter.END) 
+            entry_IDConductor.delete(0, customtkinter.END) 
+            entry_Placa.delete(0, customtkinter.END) 
+            entry_Base.delete(0, customtkinter.END)
+            entry_Ubicacion.delete(0, customtkinter.END)  
+            entry_Transporte.delete(0, customtkinter.END)
+            entry_Registro.delete(0, customtkinter.END)  
             textbox_datos.insert(customtkinter.END, "\n") 
             # Limpiar el CTkEntry después de registrar el código de barras
               #entry_Registro.delete(0, customtkinter.END)
-            label_Show.configure(text=datos)
+            #label_Show.configure(text=datos)
+            guardar_datos_excel(datos)
+                
+            
+        def guardar_datos_excel(datos):
+            archivo_excel = 'datos.xlsx'  # Nombre del archivo Excel
+            libro = openpyxl.Workbook()
+            hoja = libro.active
+            hoja.append([datos])  # Agregar los datos en la primera columna de la primera fila
+            libro.save(archivo_excel)
+            #messagebox.showinfo("Guardado", "Los datos se han guardado correctamente en el archivo Excel.")
 
+        def iniciar_tiempo():
+            hora_inicio = datetime.datetime.now().strftime("%H:%M:%S")
+            textbox_datos.insert(customtkinter.END, "Hora de inicio: " + hora_inicio + "\n")
+        
+        def detener_tiempo():
+            hora_cierre = datetime.datetime.now().strftime("%H:%M:%S")            
+            textbox_datos.insert(customtkinter.END, "Hora de cierre: " + hora_cierre + "\n")
+            # Establecer la conexión a la base de datos
+            conexion = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="JGmay12345_.#",
+            database="Despachos"
+            )
+            cursor = conexion.cursor()
+
+            # Construir la consulta SQL para actualizar el registro
+            consulta = "UPDATE productividad SET TCierre = %s WHERE id = %s"
+            valores = (hora_cierre, ID)  # Asegúrate de tener el valor de id_registro
+            cursor.execute(consulta, valores)
+
+            conexion.commit()
+        
         frame1= customtkinter.CTkFrame(ventana_principal, 
                                width=1000,
                                height=100,
@@ -90,17 +159,17 @@ def inicio_sesion():
                                fg_color='white')
         frame2.grid(row=3, column=0, padx=20, pady=(0,20), columnspan=2, sticky='nsew')
         frame2.grid_columnconfigure((0, 1, 2, 3, 5, 6, 7, 8, 9, 10), weight=1)
-        logo_Principal = customtkinter.CTkImage(light_image=Image.open('C:\\Users\\jguadamuz\\Videos\\imagen.PNG'), size =(280, 100)) 
+        #logo_Principal = customtkinter.CTkImage(light_image=Image.open('C:\\Users\\jguadamuz\\'), size =(280, 100)) 
         label_logo = customtkinter.CTkLabel(frame1,
-                                  image=logo_Principal, 
-                                  text='',
+                                  #image=logo_Principal, 
+                                  text='DESPACHOS',
                                   width=280,
                                   height=100,
-                                  font=customtkinter.CTkFont(size=24, weight="bold"),
+                                  font=customtkinter.CTkFont(size=40, weight="bold"),
                                   bg_color='white',
                                   fg_color='white')
         label_logo.grid(row=0, column=0, padx=20, pady=(0,20), columnspan=2, sticky='we')
-        Label_Title = customtkinter.CTkLabel(frame1, text='OPERACIONES DE CARGA DE CAMION',
+        Label_Title = customtkinter.CTkLabel(frame1, text='PRODUCTIVIDAD OPERACIONES DE CARGA DE CAMION',
                                            width=50,
                                            height=50,
                                            fg_color='light gray',
@@ -122,6 +191,7 @@ def inicio_sesion():
                                            height=25,
                                            font=customtkinter.CTkFont(size=12, weight="bold"))
         entry_Base.grid(row=3, column=0, padx=20, pady=(0, 20), sticky='nsew')
+        entry_Base.bind('<Return>', imprimir_datos)
         entry_Ubicacion = customtkinter.CTkEntry(frame2, placeholder_text='ID de Ubicación',
                                            width=150,
                                            height=25,
@@ -142,30 +212,41 @@ def inicio_sesion():
                                            text='',
                                            width=350,
                                            height=25,
-                                           font=customtkinter.CTkFont(size=40, weight="bold"))
+                                           font=customtkinter.CTkFont(size=25, weight="bold"))
         label_Show.grid(row=0, column=0, padx=20, pady=(0, 20), sticky='w')
         boton_inicio = customtkinter.CTkButton(frame2, text='Iniciar Carga',
                                            width=100,
                                            height=25,
                                            text_color='white',
-                                           fg_color='light blue',
-                                            corner_radius=10,
+                                           fg_color='blue',
+                                           corner_radius=10,
+                                           command=iniciar_tiempo,
                                            font=customtkinter.CTkFont(size=12, weight="bold"))
         boton_inicio.grid(row=4, column=1, padx=20, pady=(0, 20), sticky='we')
+        boton_STOP = customtkinter.CTkButton(frame2, text='Detener Carga',
+                                           width=100,
+                                           height=25,
+                                           text_color='white',
+                                           fg_color='blue',
+                                           corner_radius=10,
+                                           command=detener_tiempo,
+                                           font=customtkinter.CTkFont(size=12, weight="bold"))
+        boton_STOP.grid(row=4, column=2, padx=20, pady=(0, 20), sticky='we')
         textbox_datos = customtkinter.CTkTextbox(frame2)
         textbox_datos.grid(row=5, column=0, padx=20, pady=(0, 20), columnspan=11, sticky='we')  
-
-    
+        label_Show.configure(text='Bienvenido, ' + Usuario)
         ventana_principal.mainloop()     
-            
         
     else:
-        messagebox.showerror("Inicio de sesión", "Nombre de usuario o contraseña incorrectos")
-        
+        messagebox.showerror("Acceso incorrecto", "Usuario o contraseña incorrectos.")
+
+    # Cerrar la conexión y el cursor
+    cursor.close()
+    conexion.close()
+
 button2 = customtkinter.CTkButton(ventana_login, text="INICIAR SESION", width=50, height=50, 
                                               font=customtkinter.CTkFont(size=18, weight="bold"), 
                                               command=inicio_sesion)
 button2.grid(row=3, column=0, padx=20, pady=20, columnspan=2, sticky='ew')            
 
-ventana_login.mainloop() 
- 
+ventana_login.mainloop()
