@@ -180,8 +180,8 @@ def inicio_sesion():
     conexion = mysql.connector.connect(
         host="localhost",
         user="root",
-        password="JGmay12345_.#",
-        database="Despachos"
+        password="",
+        database=""
     )
     cursor = conexion.cursor()
 
